@@ -167,13 +167,12 @@ async def db_get_user_combinations(user_id: int) -> List[str]:
     return combination_groups
 
 
-@logger.catch()
-async def db_remove_combination_group(user_id: int, combination_index: int) -> None:
+async def db_remove_combination_group(user_id: int, combination_indices: List[int]) -> None:
     """
-    Remove a combination group at the specified index for the given user.
+    Remove combination groups at the specified indices for the given user.
     Args:
-        user_id (int): The user ID for which to remove the combination group.
-        combination_index (int): The index of the combination group to remove (1-based).
+        user_id (int): The user ID for which to remove the combination groups.
+        combination_indices (List[int]): The indices of the combination groups to remove (1-based).
     Returns:
         None
     """
@@ -183,17 +182,13 @@ async def db_remove_combination_group(user_id: int, combination_index: int) -> N
     table_name = f"user_{user_id}"
     cur.execute(f"SELECT comb_group FROM {table_name}")
     combination_groups = [row[0] for row in cur.fetchall()]
-    if combination_index >= 1 and combination_index <= len(combination_groups):
-        del combination_groups[combination_index - 1]
-        cur.execute(f"DELETE FROM {table_name}")
-        for comb_group in combination_groups:
-            cur.execute(f"INSERT INTO {table_name} (comb_group) VALUES (?)", (comb_group,))
-        db.commit()
-        logger.info(f"Combination group at index {combination_index} removed for user {user_id}")
-    else:
-        logger.warning(f"Invalid combination group index for user {user_id}")
+    combination_groups = [comb_group for index, comb_group in enumerate(combination_groups, start=1) if index not in combination_indices]
+    cur.execute(f"DELETE FROM {table_name}")
+    for comb_group in combination_groups:
+        cur.execute(f"INSERT INTO {table_name} (comb_group) VALUES (?)", (comb_group,))
+    db.commit()
+    logger.info(f"Combination groups at indices {combination_indices} removed for user {user_id}")
     db.close()
-
 
 @logger.catch()
 async def get_all_combinations_list() -> List[Dict[str, Union[int, List[str]]]]:

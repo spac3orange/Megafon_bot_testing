@@ -43,16 +43,19 @@ async def del_comb_group(callback: CallbackQuery, state: FSMContext):
 @router.message(StateFilter(RemoveCombState.remove_comb))
 async def remove_comb_group(message: Message, state: FSMContext):
     """
-       Handles a message in the state 'RemoveCombState.remove_comb'.
-       Args:
-           message (Message): Message object containing the user's input.
-           state (FSMContext): FSMContext object for managing the state.
-       Returns:
-           None
-       """
-    comb_num, uid = int(message.text), message.from_user.id
-    await message.answer(text=f'Группа комбинаций номер {comb_num} удалена',
-                         reply_markup=edit_comb_groups())
-    logger.info('Combination deleted')
-    await db_remove_combination_group(uid, comb_num)
+    Handles a message in the state 'RemoveCombState.remove_comb'.
+    Args:
+        message (Message): Message object containing the user's input.
+        state (FSMContext): FSMContext object for managing the state.
+    Returns:
+        None
+    """
+    uid = message.from_user.id
+    comb_indices = message.text.split(',')
+    comb_indices = [int(x.strip()) for x in comb_indices]
+    await db_remove_combination_group(uid, comb_indices)
+    removed_comb_indices = ', '.join(str(x) for x in comb_indices)
+    await message.answer(text=f'Группы комбинаций {removed_comb_indices} удалены')
+    logger.info(f'Combination groups at indices {comb_indices} deleted')
+    await message.answer('Мои группы комбинаций:', reply_markup=edit_comb_groups())
     await state.clear()
