@@ -9,7 +9,7 @@ router = Router()
 
 
 @router.callback_query(F.data == '/users_ops', KnownUser(F))
-async def combinations_menu(callback: CallbackQuery):
+async def members_menu(callback: CallbackQuery):
     """
        Handles the callback query with data '/users_ops' for known users.
        Args:

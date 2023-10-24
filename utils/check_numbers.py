@@ -7,39 +7,41 @@ from lexicon.reg_dictionary import reg_dict, rd2
 
 
 async def check2(mask: str, req_regs: dict) -> str:
-    """
-        Checks a mask against specified URLs and retrieves matching phone numbers.
-        Args:
-            mask (str): The mask to check.
-            req_regs (dict): dict of regs.
-        Returns:
-            str: The filename where the results are saved.
-        """
     ua = UserAgent()
     fake_ua = {'user-agent': ua.random}
     res = dict()
     for k, v in req_regs.items():
         url = f'https://api.shop.megafon.ru/number/{v}/maskSelection?offset=0&limit=44&mask={mask}'
-        async with aiohttp.ClientSession(trust_env=True, headers=fake_ua) as session:
-            async with session.get(url=url) as response:
-                jason = await response.json()
-                numbers = jason.get('numbers')
-                for item in numbers:
-                    class_type = item['classType']
-                    if class_type == 1:
-                        class_type = 'Простой'
-                    elif class_type == 2:
-                        class_type = 'Серебряный'
-                    elif class_type == 3:
-                        class_type = 'Золотой'
-                    elif class_type == 4:
-                        class_type = 'Платиновый/VIP'
-                    elif class_type == 5:
-                        class_type = 'Бронзовый'
-                    phones = item['phones']
-                    res[k] = ({'classType': class_type, 'phones': phones})
+        username = 'sp6i015wn0'
+        password = 'mVmuv81ifB8DNpvc1m'
+        proxy = f"http://{username}:{password}@ru.smartproxy.com:40000"
+        retries = 3  # Количество попыток повторного запроса в случае ошибки
+        while retries > 0:
+            try:
+                async with aiohttp.ClientSession(trust_env=True, headers=fake_ua) as session:
+                    async with session.get(url=url, proxy=proxy) as response:  # Замените 'http://your-proxy-url' на
+                        # фактический URL вашего прокси
+                        jason = await response.json()
+                        numbers = jason.get('numbers')
+                        for item in numbers:
+                            class_type = item['classType']
+                            if class_type == 1:
+                                class_type = 'Простой'
+                            elif class_type == 2:
+                                class_type = 'Серебряный'
+                            elif class_type == 3:
+                                class_type = 'Золотой'
+                            elif class_type == 4:
+                                class_type = 'Платиновый/VIP'
+                            elif class_type == 5:
+                                class_type = 'Бронзовый'
+                            phones = item['phones']
+                            res[k] = ({'classType': class_type, 'phones': phones})
+                break  # Если запрос успешен, выходим из цикла
+            except Exception as e:
+                retries -= 1
+                print(f"Ошибка при запросе: {e}. Повторный запрос...")
 
-    # Prepare the content to be written in the file
     file_content = ""
     if not res:
         return f'{mask}_empty'
@@ -49,13 +51,9 @@ async def check2(mask: str, req_regs: dict) -> str:
         file_content += "Номера: " + ", ".join(str(phone) for phone in v['phones']) + "\n"
         file_content += "\n"
 
-    # Generate a unique filename for each mask
     filename = f"{mask}.txt"
-
-    # Write the file asynchronously using aiofiles
     async with aiofiles.open(f'utils/saved_results/{filename}', 'w', encoding='utf-8') as file:
         await file.write(file_content)
-
     return filename
 
 

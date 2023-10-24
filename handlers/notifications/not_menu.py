@@ -16,7 +16,7 @@ async def get_weekdays(string: str) -> str:
 
 
 @router.callback_query(F.data == '/notifications_menu', KnownUser(F))
-async def combinations_menu(callback: CallbackQuery):
+async def notifications_menu(callback: CallbackQuery):
     """
        Handles the callback query with data '/notifications_menu' for known users.
        Args:
