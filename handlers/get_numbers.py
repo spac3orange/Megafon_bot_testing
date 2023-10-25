@@ -34,6 +34,10 @@ async def get_numbers_known_user(callback: CallbackQuery):
         uid = callback.from_user.id
         combinations = await db_get_active_combinations(uid)
         print(combinations)
+        logger.info('Searching for combinations...')
+        msg = 'Запущен поиск номеров\n' \
+              'Это займет несколько минут'
+        await callback.message.answer(msg)
         if not combinations:
             await callback.message.answer(text='Активные комбинации не установлены')
             return
@@ -57,9 +61,7 @@ async def get_numbers_known_user(callback: CallbackQuery):
         regions = await get_dict_by_indexes(user_regions, reg_dict)
         result_paths = await check_numbers.main(valid_combinations, regions)
 
-        msg = 'Запущен поиск номеров\n' \
-              'Это займет несколько минут'
-        await callback.message.answer(msg)
+
 
         if result_paths:
             for path in result_paths:
