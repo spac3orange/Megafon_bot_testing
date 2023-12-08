@@ -12,9 +12,9 @@ async def check2(mask: str, req_regs: dict) -> str:
     res = dict()
     for k, v in req_regs.items():
         url = f'https://api.shop.megafon.ru/number/{v}/maskSelection?offset=0&limit=44&mask={mask}'
-        username = 'sp6i015wn0'
-        password = 'mVmuv81ifB8DNpvc1m'
-        proxy = f"http://{username}:{password}@ru.smartproxy.com:40000"
+        username = 'customer-derivu'
+        password = 'dc09yqux40tn81pt17qmcU'
+        proxy = f"http://{username}:{password}@ru-pr.oxylabs.io:40001"
         retries = 3  # Количество попыток повторного запроса в случае ошибки
         while retries > 0:
             try:
